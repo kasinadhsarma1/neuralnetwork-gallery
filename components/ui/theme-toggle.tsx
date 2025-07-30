@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function ThemeToggle() {
-  const { theme, setTheme, systemTheme, resolvedTheme } = useTheme()
+  const { theme, setTheme, systemTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
@@ -79,7 +79,7 @@ export function ThemeToggle() {
 }
 
 export function AdvancedThemePanel() {
-  const { theme, setTheme, systemTheme, resolvedTheme } = useTheme()
+  const { theme, setTheme, systemTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
