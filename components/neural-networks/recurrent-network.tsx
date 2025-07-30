@@ -21,6 +21,8 @@ export default function RecurrentNetwork() {
   useEffect(() => {
     if (!mountRef.current) return
 
+    const mountNode = mountRef.current
+
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -29,7 +31,7 @@ export default function RecurrentNetwork() {
 
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x0a0a0a, 1)
-    mountRef.current.appendChild(renderer.domElement)
+    mountNode.appendChild(renderer.domElement)
 
     camera.position.set(0, 0, zoomLevel[0])
 
@@ -151,17 +153,17 @@ export default function RecurrentNetwork() {
       renderer.setSize(window.innerWidth, window.innerHeight)
     }
 
-    window.addEventListener("resize", handleResize)
-
     return () => {
       window.removeEventListener("resize", handleResize)
       cancelAnimationFrame(animationId)
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement)
+      if (mountNode && renderer.domElement) {
+        mountNode.removeChild(renderer.domElement)
       }
       renderer.dispose()
     }
-  }, [timeStep, zoomLevel])
+      renderer.dispose()
+    
+  }, [timeStep, zoomLevel, sequence.length])
 
   const playSequence = () => {
     setIsPlaying(true)

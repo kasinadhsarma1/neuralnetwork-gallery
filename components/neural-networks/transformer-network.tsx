@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState,useMemo} from "react"
 import * as THREE from "three"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,7 @@ export default function TransformerNetwork() {
   const mountRef = useRef<HTMLDivElement>(null)
   const [attentionStep, setAttentionStep] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
-  const tokens = ["The", "cat", "sat", "on", "the", "mat"]
+  const tokens = useMemo(() => ["The", "cat", "sat", "on", "the", "mat"], [])
   const [zoomLevel, setZoomLevel] = useState([12])
   const [focusedHead, setFocusedHead] = useState<number | null>(null)
   const [attentionScale, setAttentionScale] = useState([1])
@@ -22,13 +22,15 @@ export default function TransformerNetwork() {
   useEffect(() => {
     if (!mountRef.current) return
 
+    const mountNode = mountRef.current
+
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
 
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x0a0a0a, 1)
-    mountRef.current.appendChild(renderer.domElement)
+    mountNode.appendChild(renderer.domElement)
 
     camera.position.set(0, 0, zoomLevel[0])
     camera.lookAt(0, 0, 0)
@@ -168,17 +170,17 @@ export default function TransformerNetwork() {
       renderer.setSize(window.innerWidth, window.innerHeight)
     }
 
-    window.addEventListener("resize", handleResize)
-
     return () => {
       window.removeEventListener("resize", handleResize)
       cancelAnimationFrame(animationId)
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement)
+      if (mountNode && renderer.domElement) {
+        mountNode.removeChild(renderer.domElement)
       }
       renderer.dispose()
     }
-  }, [attentionStep, zoomLevel, attentionScale])
+      renderer.dispose()
+
+  }, [attentionStep, zoomLevel, attentionScale, tokens])
 
   const animateAttention = () => {
     setIsAnimating(true)
@@ -209,7 +211,7 @@ export default function TransformerNetwork() {
           <CardContent className="space-y-4">
             <div className="text-white">
               <div className="text-sm text-gray-400 mb-2">Attending to Token</div>
-              <div className="text-2xl font-bold">"{tokens[attentionStep]}"</div>
+              <div className="text-2xl font-bold">&quot;{tokens[attentionStep]}&quot;</div>
               <div className="text-sm text-gray-400">
                 Position: {attentionStep + 1} / {tokens.length}
               </div>

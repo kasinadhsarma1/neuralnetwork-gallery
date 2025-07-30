@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useMemo } from "react"
 import * as THREE from "three"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,7 +12,6 @@ export default function ConvolutionalNetwork() {
   const [currentLayer, setCurrentLayer] = useState(0)
   const [isProcessing, setIsProcessing] = useState(false)
   const [zoomLevel, setZoomLevel] = useState([20])
-  const [featureMapFocus, setFeatureMapFocus] = useState<number | null>(null)
   const sceneRef = useRef<{
     scene: THREE.Scene
     camera: THREE.PerspectiveCamera
@@ -20,7 +19,7 @@ export default function ConvolutionalNetwork() {
     layerMeshes: THREE.Group[]
   } | null>(null)
 
-  const layers = [
+  const layers = useMemo(() => [
     { name: "Input", size: [28, 28, 1], type: "input" },
     { name: "Conv2D", size: [26, 26, 32], type: "conv", kernel: 3 },
     { name: "MaxPool", size: [13, 13, 32], type: "pool" },
@@ -29,10 +28,11 @@ export default function ConvolutionalNetwork() {
     { name: "Flatten", size: [1600, 1, 1], type: "flatten" },
     { name: "Dense", size: [128, 1, 1], type: "dense" },
     { name: "Output", size: [10, 1, 1], type: "output" },
-  ]
+  ], [])
 
   useEffect(() => {
-    if (!mountRef.current) return
+    const mountNode = mountRef.current
+    if (!mountNode) return
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -40,7 +40,7 @@ export default function ConvolutionalNetwork() {
 
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x0a0a0a, 1)
-    mountRef.current.appendChild(renderer.domElement)
+    mountNode.appendChild(renderer.domElement)
 
     camera.position.set(0, 0, zoomLevel[0])
 
@@ -118,17 +118,17 @@ export default function ConvolutionalNetwork() {
     window.addEventListener("resize", handleResize)
 
     sceneRef.current = { scene, camera, renderer, layerMeshes }
-
     return () => {
       window.removeEventListener("resize", handleResize)
       cancelAnimationFrame(animationId)
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement)
+      if (mountNode && renderer.domElement) {
+        mountNode.removeChild(renderer.domElement)
       }
       renderer.dispose()
       sceneRef.current = null
     }
-  }, [currentLayer, zoomLevel])
+  }
+  , [currentLayer, zoomLevel, layers])
 
   const processImage = async () => {
     setIsProcessing(true)

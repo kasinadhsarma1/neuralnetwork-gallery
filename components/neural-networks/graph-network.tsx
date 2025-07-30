@@ -34,7 +34,8 @@ export default function GraphNetwork() {
   } | null>(null)
 
   useEffect(() => {
-    if (!mountRef.current) return
+    const mountNode = mountRef.current
+    if (!mountNode) return
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -42,7 +43,7 @@ export default function GraphNetwork() {
 
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x0a0a0a, 1)
-    mountRef.current.appendChild(renderer.domElement)
+    mountNode.appendChild(renderer.domElement)
 
     camera.position.set(0, 0, 15)
 
@@ -84,7 +85,7 @@ export default function GraphNetwork() {
     })
 
     // Create visual representation
-    nodes.forEach((node, index) => {
+    nodes.forEach((node) => {
       // Create node mesh
       const geometry = new THREE.SphereGeometry(0.2, 16, 16)
       const material = new THREE.MeshBasicMaterial({
@@ -197,12 +198,11 @@ export default function GraphNetwork() {
     }
 
     window.addEventListener("resize", handleResize)
-
     return () => {
       window.removeEventListener("resize", handleResize)
       cancelAnimationFrame(animationId)
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement)
+      if (mountNode && renderer.domElement) {
+        mountNode.removeChild(renderer.domElement)
       }
       renderer.dispose()
     }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { useTheme } from "next-themes"
 import * as THREE from "three"
 import { Button } from "@/components/ui/button"
@@ -117,7 +117,7 @@ const NEUROTRANSMITTERS = {
 }
 
 export default function InteractiveBrain() {
-  const { theme, resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme()
   const mountRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<{
     scene: THREE.Scene
@@ -141,7 +141,6 @@ export default function InteractiveBrain() {
   const [neuralActivity, setNeuralActivity] = useState([0.5])
   const [brainwaveType, setBrainwaveType] = useState<"alpha" | "beta" | "gamma" | "theta" | "delta">("alpha")
   const [showSynapses, setShowSynapses] = useState(true)
-  const [showNeurotransmitters, setShowNeurotransmitters] = useState(true)
   const [plasticityMode, setPlasticityMode] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -150,7 +149,7 @@ export default function InteractiveBrain() {
   }, [])
 
   // Get theme-appropriate colors
-  const getThemeColors = () => {
+  const getThemeColors = useCallback(() => {
     const isDark = resolvedTheme === "dark"
     return {
       background: isDark ? 0x0a0a0a : 0xf8fafc,
@@ -158,10 +157,12 @@ export default function InteractiveBrain() {
       synapseOpacity: isDark ? 0.15 : 0.25,
       neurons: isDark ? 1.0 : 0.8,
     }
-  }
+  }, [resolvedTheme])
 
   useEffect(() => {
     if (!mountRef.current || !mounted) return
+
+    const mountNode = mountRef.current
 
     const themeColors = getThemeColors()
     const scene = new THREE.Scene()
@@ -171,7 +172,7 @@ export default function InteractiveBrain() {
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(themeColors.background, 1)
-    mountRef.current.appendChild(renderer.domElement)
+    mountNode.appendChild(renderer.domElement)
 
     camera.position.z = 300
 
@@ -194,7 +195,7 @@ export default function InteractiveBrain() {
         frequency: [8, 15, 30, 6, 3][index],
         amplitude: Math.random() * 0.5 + 0.3,
         phase: Math.random() * Math.PI * 2,
-        type: type as any,
+        type: type as BrainWave["type"],
       })
     })
 
@@ -484,8 +485,6 @@ export default function InteractiveBrain() {
     const animate = () => {
       requestAnimationFrame(animate)
 
-      const time = Date.now() * 0.001
-
       // Auto rotation
       if (autoRotate) {
         brainGroup.rotation.y += 0.0003
@@ -619,14 +618,12 @@ export default function InteractiveBrain() {
       renderer.domElement.removeEventListener("mousemove", onMouseMove)
       renderer.domElement.removeEventListener("mouseup", onMouseUp)
       renderer.domElement.removeEventListener("click", onMouseClick)
-      renderer.domElement.removeEventListener("wheel", onWheel)
-
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement)
+      if (mountNode && renderer.domElement) {
+        mountNode.removeChild(renderer.domElement)
       }
       renderer.dispose()
     }
-  }, [resolvedTheme, mounted, neuralActivity, brainwaveType, showSynapses, plasticityMode])
+  }, [resolvedTheme, mounted, neuralActivity, brainwaveType, showSynapses, plasticityMode, autoRotate, getThemeColors])
 
   if (!mounted) {
     return (

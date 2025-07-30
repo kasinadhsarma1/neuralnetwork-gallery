@@ -32,7 +32,8 @@ export default function FeedforwardNetwork() {
   } | null>(null)
 
   useEffect(() => {
-    if (!mountRef.current) return
+    const mountNode = mountRef.current
+    if (!mountNode) return
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -40,7 +41,7 @@ export default function FeedforwardNetwork() {
 
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x0a0a0a, 1)
-    mountRef.current.appendChild(renderer.domElement)
+    mountNode.appendChild(renderer.domElement)
 
     camera.position.set(0, 0, 15)
 
@@ -95,8 +96,8 @@ export default function FeedforwardNetwork() {
       const currentLayer = layers[layerIndex]
       const nextLayer = layers[layerIndex + 1]
 
-      currentLayer.neurons.forEach((neuron, i) => {
-        nextLayer.neurons.forEach((nextNeuron, j) => {
+      currentLayer.neurons.forEach((neuron) => {
+        nextLayer.neurons.forEach((nextNeuron) => {
           const geometry = new THREE.BufferGeometry().setFromPoints([neuron, nextNeuron])
           const material = new THREE.LineBasicMaterial({
             color: 0x333333,
@@ -171,16 +172,16 @@ export default function FeedforwardNetwork() {
     }
 
     window.addEventListener("resize", handleResize)
-
     return () => {
       window.removeEventListener("resize", handleResize)
       renderer.domElement.removeEventListener("wheel", handleWheel)
       cancelAnimationFrame(animationId)
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement)
+      if (mountNode && renderer.domElement) {
+        mountNode.removeChild(renderer.domElement)
       }
       renderer.dispose()
     }
+    
   }, [])
 
   const forwardPass = () => {
